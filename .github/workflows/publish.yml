@@ -5,23 +5,28 @@ on:
     tags:
       - '*'
 
-env:
-  versionedLib: libgsf${{ github.ref }}.so
-  versionedTgz: libgsf${{ github.ref }}.tgz
-
 jobs:
   build:
 
     runs-on: ubuntu-latest
 
     steps:
+      - name: Create Variables
+        id: variables
+        run: |
+          SOURCE_TAG=${GITHUB_REF/refs\/tags\//}
+          echo SOURCE_TAG=${SOURCE_TAG}
+          echo ::set-output name=LIB_VERSION::libgsf${SOURCE_TAG}.so
+          echo ::set-output name=TGZ_VERSION::libgsf${SOURCE_TAG}.tgz
+
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Build Artifact
         run: |
           make
-          mv libgsf.so ${{ env.versionedLib }}
-          tar -cvzf ${{ env.versionedTgz }} ${{ env.versionedLib }}
+          mv libgsf.so ${{ steps.variables.outputs.LIB_VERSION }}
+          tar -cvzf ${{ steps.variables.outputs.TGZ_VERSION }} ${{ steps.variables.outputs.LIB_VERSION }}
 
       - name: Create Release
         id: create_release # so we can reference it in Upload Release Asset
@@ -40,6 +45,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./${{ env.versionedTgz }}
-          asset_name: ${{ env.versionedTgz }}
+          asset_path: ./${{ steps.variables.outputs.TGZ_VERSION }}
+          asset_name: ${{ steps.variables.outputs.TGZ_VERSION }}
           asset_content_type: application/x-gtar
