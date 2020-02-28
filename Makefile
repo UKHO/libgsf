@@ -31,4 +31,4 @@ $(SRCS_ZIP):
 	@touch $@ # set last updated to now
 
 clean:
-	@rm -f $(LIB) $(C_FILES) $(H_FILES) $(O_FILES)
+	@rm -f $(SRCS_ZIP) $(LIB) $(C_FILES) $(H_FILES) $(O_FILES)
